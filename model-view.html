@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<head>
+    <title>Facial Classification System</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script src="model.js"></script>
+    <script src="agent.js"></script>
+</head>
+<div class="container">
+    <div class="left-column">
+        <h2>Control model (Biased training)</h2>
+        <div id="control-label-container-one"></div>
+        <div id="control-label-container-two"></div>
+        <div id="control-label-container-three"></div>
+        <h2>Confusion matrix (Control model)</h2>
+        <div class="confusion-matrix">
+            <table>
+                <tr>
+                    <th><p>Glasses Class</p></th>
+                    <th>Actual Positive</th>
+                    <th>Actual Negative</th>
+                </tr>
+                <tr>
+                    <td>Predicted Positive</td>
+                    <td><input id="tp-control-glasses" data-classifier="glasses" data-model="control" data-prediction="tp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Positive"></td>
+                    <td><input id="fp-control-glasses" data-classifier="glasses" data-model="control" data-prediction="fn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Positive"></td>
+                </tr>
+                <tr>
+                    <td>Predicted Negative</td>
+                    <td><input id="fn-control-glasses" data-classifier="glasses" data-model="control" data-prediction="fp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Negative"></td>
+                    <td><input id="tn-control-glasses" data-classifier="glasses" data-model="control" data-prediction="tn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Negative"></td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th><p>Sex Class</p></th>
+                    <th>Actual Positive</th>
+                    <th>Actual Negative</th>
+                </tr>
+                <tr>
+                    <td>Predicted Positive</td>
+                    <td><input id="tp-control-sex" data-classifier="sex" data-model="control" data-prediction="tp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Positive"></td>
+                    <td><input id="fp-control-sex" data-classifier="sex" data-model="control" data-prediction="fn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Positive"></td>
+                </tr>
+                <tr>
+                    <td>Predicted Negative</td>
+                    <td><input id="fn-control-sex" data-classifier="sex" data-model="control" data-prediction="fp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Negative"></td>
+                    <td><input id="tn-control-sex" data-classifier="sex" data-model="control" data-prediction="tn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Negative"></td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th><p>Age Class</p></th>
+                    <th>Actual Positive</th>
+                    <th>Actual Negative</th>
+                </tr>
+                <tr>
+                    <td>Predicted Positive</td>
+                    <td><input id="tp-control-age" data-classifier="age" data-model="control" data-prediction="tp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Positive"></td>
+                    <td><input id="fp-control-age" data-classifier="age" data-model="control" data-prediction="fn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Positive"></td>
+                </tr>
+                <tr>
+                    <td>Predicted Negative</td>
+                    <td><input id="fn-control-age" data-classifier="age" data-model="control" data-prediction="fp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Negative"></td>
+                    <td><input id="tn-control-age" data-classifier="age" data-model="control" data-prediction="tn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Negative"></td>
+                </tr>
+            </table>
+        </div>
+        <h2>Control agent's performance</h2>
+        <h3>Accuracy: </h3>
+        <div id="accuracy-control-glasses">Glasses:</div>
+        <div id="accuracy-control-sex">Sex:</div>
+        <div id="accuracy-control-age">Age:</div>
+        <h3>Precision: </h3>
+        <div id="precision-control-glasses">Glasses:</div>
+        <div id="precision-control-sex">Sex:</div>
+        <div id="precision-control-age">Age:</div>
+        <h3>Recall: </h3>
+        <div id="recall-control-glasses">Glasses:</div>
+        <div id="recall-control-sex">Sex:</div>
+        <div id="recall-control-age">Age:</div>
+        <h3>F1 Score: </h3>
+        <div id="f1-control-glasses">Glasses:</div>
+        <div id="f1-control-sex">Sex:</div>
+        <div id="f1-control-age">Age:</div>
+        <h2>Control predictions made:</h2>
+        "is" predictions occured this many times :
+        <div id="control-prediction-is"></div>
+        "is likely" predictions occured this many times :
+        <div id="control-prediction-isLikely"></div>
+        "could be" predictions occured this many times :
+        <div id="control-prediction-couldBe"></div>
+        "is not" predictions occured this many times :
+        <div id="control-prediction-isNot"></div>
+    </div>
+    <div class="middle-column">
+        <h2>Teachable Machine Image Model</h2>
+        <input type="file" accept="image/*" onchange="handleImageUpload(event)" multiple><br><br>
+        <div>
+            Toggle which class you are testing<br>
+            <label><input type="radio" name="classToggle" value="glasses" onchange="toggleClass('glasses')" checked="checked"> Glasses Class (Positive: Wearing glasses Negative: No glasses)</label><br>
+            <label><input type="radio" name="classToggle" value="sex" onchange="toggleClass('sex')"> Sex Class (Positive: Male Negative: Female)</label><br>
+            <label><input type="radio" name="classToggle" value="age" onchange="toggleClass('age')"> Age Class (Positive: Old Negative: Young)</label><br>
+        </div>        
+        <div class="toggle-text">
+            <span id="toggle-left-text">Feeding actual POSITIVE datapoints</span>
+            <label class="switch">
+                <input type="checkbox" id="toggle" checked onchange="toggleLabels()">
+                <span class="slider round"></span>
+            </label>
+        </div>
+        <div id="image-container"></div>
+    </div>
+    <div class="right-column">
+        <h2>Extended model (non-biased model)</h2>
+        <div id="extended-label-container-one"></div>
+        <div id="extended-label-container-two"></div>
+        <div id="extended-label-container-three"></div>
+        <h2>Confusion matrix (Extended model)</h2>
+        <div class="confusion-matrix">
+            <table>
+                <tr>
+                    <th><p>Glasses Class</p></th>
+                    <th>Actual Positive</th>
+                    <th>Actual Negative</th>
+                </tr>
+                <tr>
+                    <td>Predicted Positive</td>
+                    <td><input id="tp-extended-glasses" data-classifier="glasses" data-model="extended" data-prediction="tp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Positive"></td>
+                    <td><input id="fp-extended-glasses" data-classifier="glasses" data-model="extended" data-prediction="fn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Positive"></td>
+                </tr>
+                <tr>
+                    <td>Predicted Negative</td>
+                    <td><input id="fn-extended-glasses" data-classifier="glasses" data-model="extended" data-prediction="fp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Negative"></td>
+                    <td><input id="tn-extended-glasses" data-classifier="glasses" data-model="extended" data-prediction="tn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Negative"></td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th><p>Sex Class</p></th>
+                    <th>Actual Positive</th>
+                    <th>Actual Negative</th>
+                </tr>
+                <tr>
+                    <td>Predicted Positive</td>
+                    <td><input id="tp-extended-sex" data-classifier="sex" data-model="extended" data-prediction="tp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Positive"></td>
+                    <td><input id="fp-extended-sex" data-classifier="sex" data-model="extended" data-prediction="fn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Positive"></td>
+                </tr>
+                <tr>
+                    <td>Predicted Negative</td>
+                    <td><input id="fn-extended-sex" data-classifier="sex" data-model="extended" data-prediction="fp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Negative"></td>
+                    <td><input id="tn-extended-sex" data-classifier="sex" data-model="extended" data-prediction="tn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Negative"></td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <th><p>Age Class</p></th>
+                    <th>Actual Positive</th>
+                    <th>Actual Negative</th>
+                </tr>
+                <tr>
+                    <td>Predicted Positive</td>
+                    <td><input id="tp-extended-age" data-classifier="age" data-model="extended" data-prediction="tp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Positive"></td>
+                    <td><input id="fp-extended-age" data-classifier="age" data-model="extended" data-prediction="fn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Positive"></td>
+                </tr>
+                <tr>
+                    <td>Predicted Negative</td>
+                    <td><input id="fn-extended-age" data-classifier="age" data-model="extended" data-prediction="fp" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="False Negative"></td>
+                    <td><input id="tn-extended-age" data-classifier="age" data-model="extended" data-prediction="tn" type="number" value="0" min="0" oninput="manuallyUpdateCounter(event)" title="True Negative"></td>
+                </tr>
+            </table>
+        </div>
+        <h2>Extended agent's performance</h2>
+        <h3>Accuracy: </h3>
+        <div id="accuracy-extended-glasses">Glasses:</div>
+        <div id="accuracy-extended-sex">Sex:</div>
+        <div id="accuracy-extended-age">Age:</div>
+        <h3>Precision: </h3>
+        <div id="precision-extended-glasses">Glasses:</div>
+        <div id="precision-extended-sex">Sex:</div>
+        <div id="precision-extended-age">Age:</div>
+        <h3>Recall: </h3>
+        <div id="recall-extended-glasses">Glasses:</div>
+        <div id="recall-extended-sex">Sex:</div>
+        <div id="recall-extended-age">Age:</div>
+        <h3>F1 Score: </h3>
+        <div id="f1-extended-glasses">Glasses:</div>
+        <div id="f1-extended-sex">Sex:</div>
+        <div id="f1-extended-age">Age:</div>
+        <h2>Extended predictions made:</h2>
+        "is" predictions occured this many times :
+        <div id="extended-prediction-is"></div>
+        "is likely" predictions occured this many times :
+        <div id="extended-prediction-isLikely"></div>
+        "could be" predictions occured this many times :
+        <div id="extended-prediction-couldBe"></div>
+        "is not" predictions occured this many times :
+        <div id="extended-prediction-isNot"></div>
+    </div>
+</div>
